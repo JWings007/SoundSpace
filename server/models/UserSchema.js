@@ -40,6 +40,12 @@ const userSchema = new Schema(
         ref: 'Playlist',
       },
     ],
+    posts: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Post"
+      }
+    ],
     followers: [
       {
         type: Schema.Types.ObjectId,

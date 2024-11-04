@@ -374,7 +374,6 @@ function CreatePlaylist() {
               })}
             </div>
           )}
-          <ToastContainer position="bottom-center" />
         </div>
       </div>
     </div>

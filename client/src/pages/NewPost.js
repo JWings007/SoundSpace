@@ -1,6 +1,9 @@
 import React, { useRef, useState } from "react";
 import Navbar from "../components/Navbar";
-import dndImage from "../assets/images/drag-and-drop.png";
+import { useSelector } from "react-redux";
+import imageCompression from "browser-image-compression";
+import axios from "axios"
+import { toast } from "react-toastify";
 
 const moods = [
   { id: 1, name: "Happy", icon: "smile" },
@@ -21,39 +24,107 @@ function NewPost() {
   const [selectedMood, setSelectedMood] = useState(null);
   const [tags, setTags] = useState([]);
   const [tagInput, setTagInput] = useState("");
+  const [postData, setPostData] = useState({
+    title: "",
+    description: "",
+    mood: "",
+    playlistID: "",
+    tags: [],
+    coverImage: "",
+  });
+  const [selectedPlaylist, setSelectedPlaylist] = useState([]);
+  const playlist = useSelector((state) => state.playlists.playlist);
+
   const handleSelectMood = (mood) => {
     setSelectedMood(mood);
+    setPostData({ ...postData, mood });
   };
 
-  const inputRef = useRef()
+  const inputRef = useRef();
+  const previewRef = useRef();
 
   const handleKeyDown = (e) => {
     if (e.key === "Enter" && tagInput.trim() !== "") {
       e.preventDefault(); // Prevent the default behavior of form submission
       addTag();
+      setPostData({ ...postData, tags });
     }
   };
 
   const addTag = () => {
-    setTags([...tags, tagInput.toLowerCase().trim()]); // Add new tag to the state
+    setTags((prevTags) => {
+      const newTags = [...prevTags, tagInput.toLowerCase().trim()];
+      setPostData((prevData) => ({ ...prevData, tags: newTags })); // Sync postData with the latest tags
+      return newTags;
+    });
     setTagInput(""); // Clear the input after adding the tag
   };
 
   const removeTag = (indexToRemove) => {
-    setTags(tags.filter((_, index) => index !== indexToRemove)); // Remove tag on click
+    setTags((prevTags) => {
+      const updatedTags = prevTags.filter(
+        (_, index) => index !== indexToRemove
+      );
+      setPostData((prevData) => ({ ...prevData, tags: updatedTags })); // Sync postData with updated tags
+      return updatedTags;
+    });
+  };
+
+  function previewImage(file) {
+    if (file) {
+      const reader = new FileReader();
+
+      reader.onload = function (e) {
+        previewRef.current.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  const handlePost = async (e) => {
+    e.preventDefault()
+    let formData = new FormData();
+    formData.append('title', postData.title)
+    formData.append('description', postData.description)
+    formData.append('coverImage', postData.coverImage)
+    formData.append('playlistId', postData.playlistID)
+    formData.append('tags', JSON.stringify(postData.tags))
+    formData.append('mood', postData.mood)
+    try{
+    if(formData) {
+      const res = await axios.post("http://localhost:1060/api/create-post", formData, {
+        withCredentials: true
+      })
+      if(res.status === 200) {
+        toast.success("Post Created Successfully");
+        setPostData({
+          title: "",
+          description: "",
+          mood: "",
+          playlistID: "",
+          tags: [],
+          coverImage: "",
+        })
+        setSelectedMood("");
+        setTags([])
+      }
+    }
+  }catch(err) {
+    console.log("Frontend Error")
+  }
   };
 
   return (
     <>
       <Navbar />
-      <div className="pt-32 px-16 relative">
-        <h1 className="text-3xl font-bold pl-6 pb-5">
+      <div className="pt-32 pb-20 px-16 relative">
+        <h1 className="text-3xl font-bold pb-5">
           Create a Post{" "}
           <sup>
             <i className="fi fi-rr-music-alt text-sm"></i>
           </sup>
         </h1>
-        <form action="">
+        <form >
           <div className="flex justify-between">
             <div className="flex flex-col gap-5 w-fit">
               <div className="w-fit flex px-6 rounded-lg">
@@ -67,6 +138,10 @@ function NewPost() {
                       id="title"
                       className="outline-none border border-slate-400 rounded-md pl-5 text-sm h-10"
                       placeholder="Playlist title"
+                      onChange={(e) =>
+                        setPostData({ ...postData, title: e.target.value })
+                      }
+                      value={postData.title}
                     />
                   </div>
                   <div>
@@ -79,6 +154,13 @@ function NewPost() {
                       className="w-full h-40 outline-none resize-none border-slate-400 border rounded-lg px-5 py-3 text-sm mt-2"
                       rows={15}
                       placeholder="Share your thoughts about this playlist…"
+                      onChange={(e) =>
+                        setPostData({
+                          ...postData,
+                          description: e.target.value,
+                        })
+                      }
+                      value={postData.description}
                     ></textarea>
                   </div>
                   <div className="flex gap-10">
@@ -96,6 +178,7 @@ function NewPost() {
                                   : null
                               }`}
                               onClick={() => handleSelectMood(mood.name)}
+                              key={i}
                             >
                               <p className="text-sm">{mood.name}</p>
                               <i
@@ -125,34 +208,101 @@ function NewPost() {
                       name=""
                       id=""
                       className="h-10 py-2 px-4 outline-none bg-white border border-slate-400 rounded-md text-sm"
+                      onChange={(e) => {
+                        setPostData({
+                          ...postData,
+                          playlistID: e.target.value,
+                        });
+                        if (e.target.value) {
+                          const p = playlist.filter((playL) => {
+                            return playL.pid === e.target.value;
+                          });
+                          setSelectedPlaylist(p);
+                        }
+                      }}
                     >
-                      <option value="">All time best BTS</option>
-                      <option value="">Twice Essentials</option>
-                      <option value="">BTS Essentials</option>
-                      <option value="">
-                        Blackpink Essentials Blackpink Essentials
-                      </option>
+                      {playlist
+                        ? playlist.map((p) => {
+                            return (
+                              <option value={p.pid} key={p.pid}>
+                                {p.title}
+                              </option>
+                            );
+                          })
+                        : null}
                     </select>
-                    <div className="bg-slate-200 w-fit flex items-center flex-col px-3 py-3 rounded-md">
+                    <div className="bg-purple-100 w-full flex items-center flex-col px-3 py-3 rounded-md">
                       <img
-                        src="https://upload.wikimedia.org/wikipedia/en/d/db/BTS_-_Butter.png"
+                        src={
+                          selectedPlaylist.length > 0
+                            ? selectedPlaylist[0].coverImage
+                            : ""
+                        }
                         alt=""
-                        className="w-20"
+                        className="w-28 h-28 object-cover rounded-md"
                       />
-                      <div>
-                        <p className="text-sm">All time best</p>
+                      <div className="mt-2">
+                        {selectedPlaylist.length > 0 ? (
+                          <p className="text-sm">
+                            {selectedPlaylist[0].title.length > 15
+                              ? selectedPlaylist[0].title.slice(0, 15) + "..."
+                              : selectedPlaylist[0].title}
+                          </p>
+                        ) : (
+                          <p className="text-sm">Playlist title</p>
+                        )}
                       </div>
                     </div>
-                    <div className="w-full h-52 bg-purple-200 flex items-center justify-center rounded-lg cursor-pointer hover:bg-purple-300 transition-all" onClick={() => inputRef.current.click()}>
-                      <i className="fi fi-rr-add-image flex items-center justify-center text-4xl"></i>
-                      <input
-                        type="file"
-                        name=""
-                        id=""
-                        accept="image/*"
-                        className="hidden"
-                        ref={inputRef}
-                      />
+                    <div>
+                      {postData.coverImage === "" ? (
+                        <div
+                          className="w-full h-40 rounded-md bg-purple-100 flex items-center justify-center cursor-pointer hover:bg-slate-300 transition-all"
+                          onClick={() => inputRef.current.click()}
+                        >
+                          <i className="fi fi-rr-add-image flex justify-center items-center text-3xl"></i>
+                          <input
+                            type="file"
+                            className="hidden"
+                            ref={inputRef}
+                            accept="image/*"
+                            onChange={async (e) => {
+                              const file = e.target.files[0];
+                              const options = {
+                                maxSizeMB: 1, // Maximum file size (in MB)
+                                maxWidthOrHeight: 800, // Max width/height of the image
+                                useWebWorker: true, // Use a web worker for faster compression
+                              };
+
+                              try {
+                                const compressedFile = await imageCompression(
+                                  file,
+                                  options
+                                );
+                                console.log("Compressed file:", compressedFile);
+                                setPostData({
+                                  ...postData,
+                                  coverImage: compressedFile,
+                                });
+                                previewImage(compressedFile);
+                              } catch (error) {
+                                console.error(
+                                  "Error during compression:",
+                                  error
+                                );
+                              }
+                            }}
+                          />
+                        </div>
+                      ) : (
+                        <div className="w-full h-44 rounded-md bg-red-200 overflow-hidden">
+                          <img
+                            src=""
+                            alt=""
+                            ref={previewRef}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -195,11 +345,8 @@ function NewPost() {
             </div>
           </div>
           <div className="flex gap-5 ml-6 mt-5">
-            <button className="bg-black text-white px-7 py-3 rounded-md">
+            <button className="bg-black text-white px-7 py-3 rounded-md" onClick={handlePost}>
               Share
-            </button>
-            <button className="bg-black text-white px-7 py-3 rounded-md">
-              Draft
             </button>
           </div>
         </form>

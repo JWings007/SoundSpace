@@ -1,10 +1,10 @@
 import React, { useState, useCallback } from "react";
 import _ from "lodash";
 import axios from "axios";
-import { toast } from "react-toastify";
 
 function SongFinder(props) {
   const [results, setResults] = useState([]);
+  const [query, setQuery] = useState('')
 
   const fetchSearchResults = async (searchQuery) => {
     if (searchQuery) {
@@ -17,6 +17,7 @@ function SongFinder(props) {
         );
         if (result) {
           setResults(result.data.tracks.items);
+          setQuery(searchQuery)
         }
       } catch (err) {
         console.log("error in fetching songs", err);
@@ -45,6 +46,7 @@ function SongFinder(props) {
       </div>
       {results && (
         <div className="mt-5 flex flex-col gap-1">
+          { results.length != 0 ? <p className="font-light pb-5">Showing results for '{query}'</p> : null}
           {results.map((song, i) => {
             return (
               <div

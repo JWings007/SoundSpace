@@ -1,24 +1,21 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-    playlist: []
+    user: {}
 };
 
-const PlaylistSlice = createSlice({
-    name: 'playlist',
+const UserSlice = createSlice({
+    name: 'user',
     initialState,
     reducers: {
-        setPlaylist: (state, action) => {
-            state.playlist = action.payload;
+        setUser: (state, action) => {
+            state.user = action.payload;
         },
-        addPlaylist: (state, action) => {
-            state.playlist.push(action.payload);
-        },
-        clearPlaylist: (state) => {
-            state.playlist = [];
+        deleteUser: (state) => {
+            state.user = {};
         }
     }
 });
 
-export const { setPlaylist, addPlaylist, clearPlaylist } = PlaylistSlice.actions;
-export default PlaylistSlice.reducer;
+export const { setUser, deleteUser } = UserSlice.actions;
+export default UserSlice.reducer;

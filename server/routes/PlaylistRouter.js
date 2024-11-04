@@ -85,7 +85,7 @@ router.post(
     if (songs) toBeUpdated.songs = JSON.parse(songs);
     if (coverPath && oldCover) {
       const publicId = oldCover.split("/").slice(-2).join("/").split(".")[0];
-      console.log(publicId)
+      console.log(publicId);
       cloudinary.uploader.destroy(publicId, (error, result) => {
         if (error) {
           console.error("Error deleting old image:", error);
@@ -127,5 +127,54 @@ router.post(
     }
   }
 );
+
+router.get("/playlist/:pid", ensureSpotifyAccessToken, async (req, res) => {
+  const { pid } = req.params;
+
+  if (pid) {
+    try {
+      // Find the playlist by its pid
+      const playlist = await Playlist.findOne({ pid: pid });
+      if (!playlist) {
+        return res.status(404).json({ message: "Playlist not found" });
+      }
+
+      // Divide song IDs into chunks
+      const trackChunks = [];
+      const chunkSize = 50;
+      for (let i = 0; i < playlist.songs.length; i += chunkSize) {
+        trackChunks.push(playlist.songs.slice(i, i + chunkSize).join(","));
+      }
+
+      // Fetch song details for each chunk from Spotify
+      const songDetails = await Promise.all(
+        trackChunks.map(async (tracks) => {
+          const response = await axios.get(
+            `https://api.spotify.com/v1/tracks?ids=${tracks}`,
+            {
+              headers: {
+                Authorization: `Bearer ${req.accessToken}`,
+                "Content-Type": "application/json",
+              },
+            }
+          );
+          return response.data.tracks;
+        })
+      );
+
+      // Flatten the array of song details
+      const allSongs = songDetails.flat();
+
+      // Send the response with the full playlist and populated songs
+      res.status(200).json({ ...playlist.toObject(), songs: allSongs });
+    } catch (error) {
+      console.error("Error fetching playlist details:", error);
+      res.status(500).json({ message: "Server error" });
+    }
+  } else {
+    res.status(400).json({ message: "Playlist ID not provided" });
+  }
+});
+
 
 module.exports = router;

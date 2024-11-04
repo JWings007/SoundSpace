@@ -10,6 +10,7 @@ const app = express();
 const authRouter = require('./routes/authRouter');
 const userRouter = require('./routes/userRouter');
 const playlistRouter = require('./routes/PlaylistRouter');
+const searchRouter = require('./routes/searchRouter');
 
 
 // DATABASE CONNECTION
@@ -34,6 +35,7 @@ app.use(cookieParser())
 app.use('/api/auth', authRouter);
 app.use('/api', userRouter)
 app.use('/api', playlistRouter)
+app.use('/api', searchRouter)
 
 app.listen(1060, () => {
     console.log('Server started at post 1060');
