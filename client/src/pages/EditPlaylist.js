@@ -9,6 +9,8 @@ import axios from "axios";
 import EditOverlay from "../components/EditOverlay";
 import SongFinder from "../components/SongFinder";
 import { ToastContainer, toast } from "react-toastify";
+import { timeConverter } from "../utils/timeFormatter";
+
 
 const TableRow = ({ song, index, onDragStart, onDrop }) => {
   const [isDragging, setIsDragging] = useState(false);
@@ -57,7 +59,7 @@ const TableRow = ({ song, index, onDragStart, onDrop }) => {
         </div>
       </td>
       <td className="p-2 text-sm">{song.album.name.length > 30 ? song.album.name.slice(0, 30) + ' ...' : song.album.name}</td>
-      <td className="p-2 text-sm">3:44</td>
+      <td className="p-2 text-sm">{timeConverter(song.duration_ms)}</td>
       <td className="p-2 text-sm pl-8 text-left">
         <i
           className={`fi fi-rr-${isPlaying ? "pause pulse" : "play"} cursor-pointer flex items-center justify-start w-fit p-[10px] rounded-[50%]`}
@@ -204,36 +206,6 @@ function EditPlaylist() {
       }
     }
   };
-
-  // USEFFECTS
-
-  // useEffect(() => {
-  //   const audio = document.getElementById("audio");
-  //   const playBtn = document.querySelector(".play-btn");
-  //   const pauseBtn = document.querySelector(".pause-btn");
-  //   const progressBar = document.getElementById("progress-bar");
-  //   const progress = document.getElementById("progress");
-
-  //   playBtn.addEventListener("click", () => {
-  //     audio.play();
-  //   });
-
-  //   pauseBtn.addEventListener("click", () => {
-  //     audio.pause();
-  //   });
-
-  //   audio.addEventListener("timeupdate", () => {
-  //     const percentage = (audio.currentTime / audio.duration) * 100;
-  //     progress.style.width = `${percentage}%`;
-  //   });
-
-  //   progressBar.addEventListener("click", (e) => {
-  //     const offsetX = e.offsetX;
-  //     const totalWidth = progressBar.offsetWidth;
-  //     const newTime = (offsetX / totalWidth) * audio.duration;
-  //     audio.currentTime = newTime;
-  //   });
-  // }, []);
 
   useEffect(() => {
     const fetchPlaylists = async () => {

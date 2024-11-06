@@ -2,11 +2,13 @@ import React, { useState, useCallback, useRef } from "react";
 import Navbar from "../components/Navbar";
 import _ from "lodash";
 import axios from "axios";
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import imageCompression from "browser-image-compression";
 import { useDispatch } from "react-redux";
 import { setPlaylist } from "../features/playlist/PlaylistSlice";
+import { timeConverter } from "../utils/timeFormatter";
+
 
 function CreatePlaylist() {
   const [edit, setEdit] = useState(false);
@@ -46,7 +48,7 @@ function CreatePlaylist() {
           withCredentials: true,
         }
       );
-      if (response.data.status === 200){
+      if (response.data){
         toast.success(response.data.message)
         try {
           const response = await axios.get(
@@ -78,13 +80,6 @@ function CreatePlaylist() {
     }
   }
 
-  function timeConverter(ms) {
-    let mins = Math.floor(ms / 1000 / 60);
-    let secs = Math.floor((ms / 1000) % 60);
-    secs = secs < 10 ? "0" + secs : secs;
-
-    return `${mins}:${secs}`;
-  }
 
   const fetchSearchResults = async (searchQuery) => {
     if (searchQuery) {
@@ -333,6 +328,7 @@ function CreatePlaylist() {
           </div>
           {results && (
             <div className="mt-5 flex flex-col gap-1">
+              { results.length != 0 ? <p className="font-light pb-5 text-sm">Showing results for '{query}'</p> : null}
               {results.map((song, i) => {
                 return (
                   <div

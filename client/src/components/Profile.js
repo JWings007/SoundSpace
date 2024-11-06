@@ -11,14 +11,14 @@ function Profile() {
   const [currentUser, setCurrentUser] = useState();
   const [refresher, setRefresher] = useState(0);
   const storedUser = useSelector((state) => state.user.user);
-  const username = useParams().uid;
+  const uid = useParams().uid;
   const buttonRef = useRef();
   const dispatch = useDispatch();
   useEffect(() => {
     const fetchUser = async () => {
       try {
         const res = await axios.get(
-          `http://localhost:1060/api/profile/${username}`,
+          `http://localhost:1060/api/profile/${uid}`,
           {
             withCredentials: true,
           }
@@ -39,7 +39,7 @@ function Profile() {
     };
 
     fetchUser();
-  }, [username, refresher]);
+  }, [uid, refresher]);
 
   const handleFollow = async () => {
     try {
@@ -64,7 +64,7 @@ function Profile() {
     <div>
       <Navbar />
       {currentUser && (
-        <div className="pt-32 px-16">
+        <div className="pt-36 px-16 py-20">
           <div className="flex flex-col items-center relative">
             <button className="absolute top-0 right-0 bg-black p-5 rounded-[50%] group">
               <i className="fi fi-rr-edit text-white flex items-center justify-center group-hover:scale-110 transition-all duration-200"></i>
@@ -112,7 +112,11 @@ function Profile() {
                   onClick={handleFollow}
                   ref={buttonRef}
                 >
-                  {currentUser.followers.filter(user => user.name === storedUser.name).length > 0 ? "Unfollow" : "Follow"}
+                  {currentUser.followers.filter(
+                    (user) => user.name === storedUser.name
+                  ).length > 0
+                    ? "Unfollow"
+                    : "Follow"}
                 </button>
               ) : null}
             </div>
@@ -123,9 +127,6 @@ function Profile() {
                 <h1 className="font-semibold cursor-pointer border-t-[3px] border-t-black py-4">
                   POSTS
                 </h1>
-              </div>
-              <div>
-                <h1 className="text-slate-400 cursor-pointer">SAVED</h1>
               </div>
             </div>
             <div className="grid grid-cols-4 gap-5">
@@ -146,13 +147,16 @@ function Profile() {
                           />
                         </div>
                         <div className="text-center">
-                          <h1 className="text-xl font-semibold">
+                          <h1 className="text-lg font-semibold">
                             {post.title}
                           </h1>
-                          <div>
-                            <span className="text-black text-sm">
-                              BTS, Twice, Blackpink
-                            </span>
+                          <div className="flex gap-5 items-center justify-center text-sm py-3">
+                            <div>
+                              <p>Likes: {post.likes.length}</p>
+                            </div>
+                            <div>
+                              <p>Comments: {post.comments.length}</p>
+                            </div>
                           </div>
                         </div>
                       </div>

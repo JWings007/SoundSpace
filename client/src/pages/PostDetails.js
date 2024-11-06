@@ -2,6 +2,8 @@ import React, { useState, useRef, useEffect } from "react";
 import axios from "axios";
 import Navbar from "../components/Navbar";
 import { useParams } from "react-router-dom";
+import { formatDuration, timeConverter } from "../utils/timeFormatter";
+
 
 const TableRow = ({ song, index }) => {
   const [isPlaying, setIsPlaying] = useState(false);
@@ -37,7 +39,7 @@ const TableRow = ({ song, index }) => {
           ? song.album.name.slice(0, 30) + " ..."
           : song.album.name}
       </td>
-      <td className="p-2 text-sm">3:44</td>
+      <td className="p-2 text-sm">{timeConverter(song.duration_ms)}</td>
       <td className="p-2 text-sm pl-8 text-left">
         <i
           className={`fi fi-rr-${
@@ -52,7 +54,7 @@ const TableRow = ({ song, index }) => {
 };
 
 function PostDetails() {
-  const [playlist, setPlaylist] = useState({songs:[]});
+  const [playlist, setPlaylist] = useState({ songs: [] });
   const pid = useParams().pid;
 
   useEffect(() => {
@@ -70,7 +72,7 @@ function PostDetails() {
     <>
       <Navbar />
       {playlist ? (
-        <div className="pt-32 px-16 py-10 relative">
+        <div className="pt-36 px-16 py-10 relative">
           <div className="flex items-center h-[50vh] overflow-hidden relative rounded-lg px-8">
             <img
               src={playlist ? playlist.coverImage : ""}
@@ -84,16 +86,18 @@ function PostDetails() {
                 className="w-72 h-72 shadow-lg rounded-lg object-cover"
               />
             </div>
-            <div className="w-1/2">
+            <div className="h-full py-14">
               <p className="font-semibold text-xl">Playlist</p>
               <h1 className="text-3xl font-bold pb-5">{playlist?.title}</h1>
               <p>{playlist?.description}</p>
-              <div className="flex gap-5">
+              <div className="flex gap-5 pt-5">
                 <span className="text-slate-800">
                   {playlist.songs.length} songs
                 </span>
                 <span className="text-slate-800">•</span>
-                <span className="text-slate-800">2 hrs 5 mins</span>
+                <span className="text-slate-800">
+                  {formatDuration(playlist.duration)}
+                </span>
               </div>
             </div>
           </div>

@@ -7,10 +7,9 @@ const userSchema = new Schema(
       type: String,
       required: true,
       unique: true,
-      trim: true,
     },
     name: {
-      type: String
+      type: String,
     },
     email: {
       type: String,
@@ -18,11 +17,8 @@ const userSchema = new Schema(
     },
     tagline: {
       type: String,
-      required: true,
-      unique: true,
-      trim: true,
-      lowercase: true,
-      default: "#tagline"
+      default: "#tagline",
+      unique: false
     },
     bio: {
         type: String

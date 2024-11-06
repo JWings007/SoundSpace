@@ -203,11 +203,11 @@ function NewPost() {
               <div className="flex justify-between">
                 <div>
                   <h1 className="font-semibold pb-2">Select the playlist</h1>
-                  <div className="flex gap-10 flex-col">
+                  <div className="flex gap-10 flex-col w-full">
                     <select
                       name=""
                       id=""
-                      className="h-10 py-2 px-4 outline-none bg-white border border-slate-400 rounded-md text-sm"
+                      className="h-10 py-2 px-4 outline-none bg-white border border-slate-400 rounded-md text-sm w-full"
                       onChange={(e) => {
                         setPostData({
                           ...postData,
@@ -215,16 +215,17 @@ function NewPost() {
                         });
                         if (e.target.value) {
                           const p = playlist.filter((playL) => {
-                            return playL.pid === e.target.value;
+                            return playL._id === e.target.value;
                           });
                           setSelectedPlaylist(p);
                         }
                       }}
                     >
+                      <option value={""} selected>Select playlist</option>
                       {playlist
                         ? playlist.map((p) => {
                             return (
-                              <option value={p.pid} key={p.pid}>
+                              <option value={p._id} key={p.pid}>
                                 {p.title}
                               </option>
                             );

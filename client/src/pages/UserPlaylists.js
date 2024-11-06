@@ -63,7 +63,7 @@ function UserPlaylists() {
                 </div>
                 <div>
                   <h1
-                    className="text-xl font-semibold"
+                    className="text-md font-semibold"
                     style={{ textShadow: "0px 0px 15px #ffffff" }}
                   >
                     {p.title}

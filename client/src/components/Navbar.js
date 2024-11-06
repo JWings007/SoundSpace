@@ -69,7 +69,7 @@ function Navbar() {
           <i
             className="fi fi-rr-bell-ring flex items-center justify-center text-2xl hover:-translate-y-2 transition-all hover:text-slate-500 cursor-pointer py-2"
             onClick={() => {
-              navigate(`/profile/${storedUser.name}`);
+              navigate(`/profile/${storedUser.uid}`);
               queryRef.current.value = "";
               setSearchQuery("");
             }}

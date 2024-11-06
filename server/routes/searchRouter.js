@@ -5,6 +5,7 @@ const Playlist = require("../models/PlaylistSchema");
 const User = require("../models/UserSchema");
 const router = require("express").Router();
 
+
 router.post("/search", ensureSpotifyAccessToken, async (req, res) => {
   const { query } = req.body;
   const results = {
@@ -23,7 +24,7 @@ router.post("/search", ensureSpotifyAccessToken, async (req, res) => {
     }, {_id: 0, owner: 0});
     const users = await User.find({
       $and: userTerms,
-    }, { _id: 0, uid:0, email: 0, access_token: 0}).populate({
+    }).select("-_id name avatar uid").populate({
       path: "posts",
       select: "-_id -owner"
     })

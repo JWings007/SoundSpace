@@ -63,13 +63,13 @@ function SearchResults(props) {
             {props.results.users
               ? props.results.users?.map((user, i) => {
                   return (
-                    <div className="flex items-center justify-center w-fit flex-col gap-4" key={i} onClick={()=> {navigate(`/profile/${user.name.toLowerCase()}`)
+                    <div className="flex items-center justify-center w-fit flex-col gap-4" key={i} onClick={()=> {navigate(`/profile/${user.uid}`)
                     props.setQuery("")
                     }}>
                       <img
                         src={user.avatar}
                         alt=""
-                        className="w-32 h-32 rounded-[50%]"
+                        className="w-32 h-32 rounded-full object-cover"
                       />
                       <div className="flex flex-col items-center justify-center gap-3">
                         <h3 className="font-semibold text-md">{user.name}</h3>

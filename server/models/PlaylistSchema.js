@@ -7,6 +7,12 @@ const playlistSchema = new Schema(
     description: { type: String },
     coverImage: { type: String },
     pid: { type: String },
+    duration: {
+      type: Number
+    },
+    artists: {
+      type: String
+    },
     owner: {
       type: Schema.Types.ObjectId,
       ref: "User",

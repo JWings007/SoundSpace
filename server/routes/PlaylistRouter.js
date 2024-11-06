@@ -13,10 +13,7 @@ router.get("/playlists", ensureSpotifyAccessToken, async (req, res) => {
   try {
     const user = await User.findOne({ access_token: req.accessToken });
     if (user) {
-      const playlists = await Playlist.find(
-        { owner: user._id },
-        { _id: 0, owner: 0 }
-      );
+      const playlists = await Playlist.find({ owner: user._id }, { owner: 0 });
 
       const playlistDetails = await Promise.all(
         playlists.map(async (playlist) => {
@@ -85,7 +82,6 @@ router.post(
     if (songs) toBeUpdated.songs = JSON.parse(songs);
     if (coverPath && oldCover) {
       const publicId = oldCover.split("/").slice(-2).join("/").split(".")[0];
-      console.log(publicId);
       cloudinary.uploader.destroy(publicId, (error, result) => {
         if (error) {
           console.error("Error deleting old image:", error);
@@ -109,10 +105,57 @@ router.post(
       );
 
       if (updatedPlaylist) {
-        return res.status(200).json({
-          status: 200,
-          message: "Playlist updated successfully",
+        //START
+        let totalDuration = 0;
+        const songs = updatedPlaylist.songs
+        const trackChunks = [];
+        const chunkSize = 50;
+        for (let i = 0; i < songs.length; i += chunkSize) {
+          trackChunks.push(songs.slice(i, i + chunkSize).join(","));
+        }
+
+        const songDetails = await Promise.all(
+          trackChunks.map(async (tracks) => {
+            const response = await axios.get(
+              `https://api.spotify.com/v1/tracks?ids=${tracks}`,
+              {
+                headers: {
+                  Authorization: `Bearer ${req.accessToken}`,
+                  "Content-Type": "application/json",
+                },
+              }
+            );
+            return response.data.tracks;
+          })
+        );
+
+        const flattenedSongDetails = songDetails.flat();
+        flattenedSongDetails.forEach((s) => {
+          totalDuration += s.duration_ms;
         });
+        const allArtists = flattenedSongDetails.map((song) =>
+          song.artists.map((artist) => artist.name)
+        );
+        const flattenedArtists = allArtists.flat();
+        const uniqueArtists = [...new Set(flattenedArtists)];
+        const artists = uniqueArtists.join(", ");
+
+        //END
+        const finalPlaylist = await Playlist.findOneAndUpdate(
+          { pid },
+          {
+            $set: {
+              duration: totalDuration,
+              artists: artists,
+            },
+          },
+          { new: true }
+        );
+        if (finalPlaylist)
+          return res.status(200).json({
+            status: 200,
+            message: "Playlist updated successfully",
+          });
       } else {
         return res.status(404).json({
           status: 404,
@@ -175,6 +218,5 @@ router.get("/playlist/:pid", ensureSpotifyAccessToken, async (req, res) => {
     res.status(400).json({ message: "Playlist ID not provided" });
   }
 });
-
 
 module.exports = router;

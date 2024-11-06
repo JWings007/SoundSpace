@@ -88,10 +88,10 @@ router.get("/callback", async (req, res) => {
       } else {
         user = new userModel({
           uid: userResponse.data.id,
-          name: userResponse.data.display_name,
+          name: userResponse.data.display_name.toLowerCase().replace(/ /g, '_'),
           email: userResponse.data.email,
           access_token: response.data.access_token,
-          avatar: userResponse.data.images ? userResponse.data.images[1].url : ''
+          avatar: userResponse.data.images.length > 0 ? userResponse.data.images[0].url : ''
         });
         await user.save();
         let userToken = new refreshTokenModel({
